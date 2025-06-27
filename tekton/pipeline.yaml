@@ -3,6 +3,7 @@
 #   - git-clone
 #   - flake8
 #   - cleanup (custom/init task)
+#   - nose (custom test task)
 #
 ---
 apiVersion: tekton.dev/v1beta1
@@ -48,6 +49,24 @@ spec:
         - name: image
           value: "python:3.9-slim"
         - name: args
-          value: ["--count", "--max-complexity=10", "--max-line-length=127", "--statistics"]
+          value:
+            - "--count"
+            - "--max-complexity=10"
+            - "--max-line-length=127"
+            - "--statistics"
+      runAfter:
+        - clone
+
+    - name: tests
+      workspaces:
+        - name: source
+          workspace: pipeline-workspace
+      taskRef:
+        name: nose
+      params:
+        - name: database_uri
+          value: "sqlite:///test.db"
+        - name: args
+          value: "-v --with-spec --spec-color"
       runAfter:
         - clone
